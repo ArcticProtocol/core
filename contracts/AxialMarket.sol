@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: MIT 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
-contract AxialMarket {
+contract AxialMarket is AutomationCompatibleInterface {
     enum CreditType {
         Ocean,
         Clean,
@@ -13,26 +15,43 @@ contract AxialMarket {
     uint256 private totalOffsets;
     uint256 marketReserveFund = 0;
 
+    // Array to track admin addresses
+    address[] public admins;
 
-    IERC20Burnable private oceanToken;
-    IERC20Burnable private cleanToken;
-    IERC20Burnable private plasticToken;
+      // Modifier to check if the caller is an admin
+    modifier onlyAdmin() {
+        bool isAdmin = false;
+        for (uint256 i = 0; i < admins.length; i++) {
+            if (admins[i] == msg.sender) {
+                isAdmin = true;
+                break;
+            }
+        }
+        require(isAdmin, "Only admins can call this function");
+        _;
+    }
+
+
+    ERC20Burnable private oceanToken;
+    ERC20Burnable private cleanToken;
+    ERC20Burnable private plasticToken;
 
     address payable private axialDAO;
 
     constructor(
         address _oceanToken,
         address _cleanToken,
-        address _plasticToken,
-        address _axialDAOAddress
+        address _plasticToken
     ) {
-        oceanToken = IERC20Burnable(_oceanToken);
-        cleanToken = IERC20Burnable(_cleanToken);
-        plasticToken = IERC20Burnable(_plasticToken);
+        oceanToken = ERC20Burnable(_oceanToken);
+        cleanToken = ERC20Burnable(_cleanToken);
+        plasticToken = ERC20Burnable(_plasticToken);
     }
 
-    function updateAxialDAOAddress(address daoAddress) public onlyAdmin returns (bool){
-        axialDAO = _axialDAOAddress;
+    function updateAxialDAOAddress(
+        address payable daoAddress
+    ) public  onlyAdmin returns (bool) {
+        axialDAO = daoAddress;
         return true;
     }
 
@@ -91,26 +110,26 @@ contract AxialMarket {
         return totalOffsets;
     }
 
-
-// Chainlink Keeper method: checkUpkeep
-function checkUpkeep(
-    bytes calldata /*checkData*/
-)
-    external
-    view
-    override
-    returns (bool upkeepNeeded, bytes memory /*performData*/)
-{
-    if(marketReserveFund > 0){
-        upkeepNeeded = true;
+    // Chainlink Keeper method: checkUpkeep
+    function checkUpkeep(
+        bytes calldata /*checkData*/
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory /*performData*/)
+    {
+        if (marketReserveFund > 0) {
+            upkeepNeeded = true;
+        }
+        return (upkeepNeeded, abi.encode(marketReserveFund));
     }
-    return (upkeepNeeded, abi.encode(marketReserveFund));
-}
 
-// Chainlink Keeper method: performUpkeep
-function performUpkeep(bytes calldata performData) external override {
-    uint256 marketFund = abi.decode(performData, (uint256));
-    require(marketFund > 0 , "Funds needs to be greater than 0 to trasnfer")
+    // Chainlink Keeper method: performUpkeep
+    function performUpkeep(bytes calldata performData) external override {
+        uint256 marketFund = abi.decode(performData, (uint256));
+        require(marketFund > 0, "Funds needs to be greater than 0 to trasnfer");
 
-    axialDAO.transfer(marketFund);
+        axialDAO.transfer(marketFund);
+    }
 }
