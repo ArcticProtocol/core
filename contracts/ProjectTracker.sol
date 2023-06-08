@@ -38,6 +38,11 @@ contract ProjectTracker {
         admins.push(msg.sender);
     }
 
+    function addAdmin(address account) external onlyAdmin returns (bool) {
+        admins.push(account);
+        return true;
+    }
+
     // Function to add a new project
     function addProject(
         string memory id,

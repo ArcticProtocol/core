@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 contract AxialCleanToken is ERC20Burnable {
     address public minter;
 
-    constructor() ERC20("Axial Clean Token", "ACT") {
+    constructor() ERC20("Axial Clean Energy Token", "ACT") {
         minter = msg.sender;
         _mint(_msgSender(), 1000000 * (10 ** decimals()));
     }

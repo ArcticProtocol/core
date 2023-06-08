@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 contract AxialPlasticToken is ERC20Burnable {
     address public minter;
 
-    constructor() ERC20("Axial Waste Token", "AWT") {
+    constructor() ERC20("Axial Plastic Token", "APT") {
         minter = msg.sender;
         _mint(msg.sender, 1000000 * (10 ** decimals()));
     }
