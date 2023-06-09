@@ -38,6 +38,7 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
     ERC20Burnable private plasticToken;
 
     address payable private axialDAO;
+    uint public constant INITIAL_CREDIT_SUPPLY = 1000000000000000000000000;
 
     constructor(
         address _oceanToken,
@@ -47,6 +48,10 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
         oceanToken = ERC20Burnable(_oceanToken);
         cleanToken = ERC20Burnable(_cleanToken);
         plasticToken = ERC20Burnable(_plasticToken);
+
+        oceanToken.approve(address(this), INITIAL_CREDIT_SUPPLY);
+        cleanToken.approve(address(this), INITIAL_CREDIT_SUPPLY);
+        plasticToken.approve(address(this), INITIAL_CREDIT_SUPPLY);
         admins.push(msg.sender);
     }
 
