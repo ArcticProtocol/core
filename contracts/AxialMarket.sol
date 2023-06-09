@@ -1,10 +1,11 @@
-// SPDX-License-Identifier: MIT 
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
 
-contract AxialMarket is AutomationCompatibleInterface {
+contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
     enum CreditType {
         Ocean,
         Clean,
@@ -46,6 +47,7 @@ contract AxialMarket is AutomationCompatibleInterface {
         oceanToken = ERC20Burnable(_oceanToken);
         cleanToken = ERC20Burnable(_cleanToken);
         plasticToken = ERC20Burnable(_plasticToken);
+        admins.push(msg.sender);
     }
 
     function updateAxialDAOAddress(
@@ -59,8 +61,6 @@ contract AxialMarket is AutomationCompatibleInterface {
         CreditType creditType,
         uint256 amount
     ) public payable {
-        require(msg.value == amount, "Transaction Amount should match the value of token");
-
         if (creditType == CreditType.Ocean) {
             oceanToken.transferFrom(address(this), msg.sender,  amount);
         } else if (creditType == CreditType.Clean) {
@@ -78,8 +78,6 @@ contract AxialMarket is AutomationCompatibleInterface {
         uint256 amount,
         CreditType creditType
     ) public payable {
-        require(userOffsets[msg.sender] >= amount, "Insufficient offsets");
-
         if (creditType == CreditType.Ocean) {
             require(
                 oceanToken.balanceOf(msg.sender) >= amount,

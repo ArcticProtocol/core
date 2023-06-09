@@ -4,9 +4,10 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
 import "./ProjectTracker.sol";
 
-contract AxialDAO is Ownable, AutomationCompatibleInterface {
+contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
     using Address for address;
 
     // Proposal struct

@@ -50,7 +50,6 @@ contract ProjectTracker {
         uint256 funding,
         uint256 impactGoal,
         uint256 rating,
-        bool isCommissioned,
         address[] memory teamMembers
     ) public {
         // Create a new project object
@@ -61,7 +60,7 @@ contract ProjectTracker {
             0,
             impactGoal,
             rating,
-            isCommissioned,
+            false,
             teamMembers
         );
 
@@ -84,7 +83,12 @@ contract ProjectTracker {
         project.funding += amount;
 
         // Emit an event to notify listeners of the transfer
-        emit FuncProject(projectId, amount);
+        emit FundProject(projectId, amount);
+    }
+
+    function getProjectById(string memory projectId) public view returns (Project memory){
+        // return the project data
+        return projects[projectId];
     }
 
     // Function to update the rating of a project by ID
@@ -141,8 +145,20 @@ contract ProjectTracker {
         return false;
     }
 
+     // Function to add address is a team member of a project
+    function addTeamMember(string memory projectId, address teamMember) public returns (bool) {
+        // Get the project data
+        if(isTeamMember(projectId , msg.sender)){
+            Project storage project = projects[projectId];
+            project.teamMembers.push(teamMember);
+            return true;
+        }
+
+        return false;
+    }
+
     // Event to notify listeners of a MATIC transfer
-    event FuncProject(string projectId, uint256 amount);
+    event FundProject(string projectId, uint256 amount);
 
     // Event to notify listeners of a funds withdrawal
     event WithdrawFunds(string projectId, address teamMember, uint256 amount);
