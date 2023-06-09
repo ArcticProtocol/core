@@ -27,6 +27,21 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
         mapping(address => bool) voted;
     }
 
+    struct ProposalResponse {
+        uint256 id;
+        address creator;
+        string projectId;
+        string goal;
+        uint256 fundingRequired;
+        uint256 fundingReceived;
+        uint256 startTime;
+        uint256 endTime;
+        bool votingExpired;
+        bool approved;
+        uint256 yesVotes;
+        uint256 noVotes;
+    }
+
     // Other contract references
     ProjectTracker private projectTrackerContract;
 
@@ -45,7 +60,7 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
 
     // Function to create a new proposal
     function createProposal(
-         string memory _goal,
+        string memory _goal,
         uint256 _fundingRequired,
         uint256 _duration,
         string memory projectId
@@ -60,18 +75,18 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
 
         Proposal storage newProposal = proposals[proposalCounter];
 
-            newProposal.id= proposalCounter;
-            newProposal.projectId = projectId;
-            newProposal.creator= msg.sender;
-            newProposal.goal= _goal;
-            newProposal.fundingRequired= _fundingRequired;
-            newProposal.fundingReceived= 0;
-            newProposal.startTime= block.timestamp;
-            newProposal.endTime= endTime;
-            newProposal.votingExpired= false;
-            newProposal.approved= false;
-            newProposal.yesVotes= 0;
-            newProposal.noVotes= 0;
+        newProposal.id = proposalCounter;
+        newProposal.projectId = projectId;
+        newProposal.creator = msg.sender;
+        newProposal.goal = _goal;
+        newProposal.fundingRequired = _fundingRequired;
+        newProposal.fundingReceived = 0;
+        newProposal.startTime = block.timestamp;
+        newProposal.endTime = endTime;
+        newProposal.votingExpired = false;
+        newProposal.approved = false;
+        newProposal.yesVotes = 0;
+        newProposal.noVotes = 0;
 
         proposalCounter++;
     }
@@ -96,7 +111,7 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
     }
 
     // Function to expire a proposal and trigger approval or rejection
-    function expireProposalVoting(uint256 _proposalId) internal returns (bool){
+    function expireProposalVoting(uint256 _proposalId) internal returns (bool) {
         Proposal storage proposal = proposals[_proposalId];
         if (
             _proposalId > proposalCounter ||
@@ -110,6 +125,28 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
         proposal.approved = proposal.yesVotes > proposal.noVotes;
 
         return true;
+    }
+
+    function getProposalById(
+        uint256 _proposalId
+    ) external view returns (ProposalResponse memory) {
+        Proposal storage proposal = proposals[_proposalId];
+        ProposalResponse memory response = ProposalResponse({
+            id: proposal.id,
+            projectId: proposal.projectId,
+            creator: proposal.creator,
+            goal: proposal.goal,
+            fundingRequired: proposal.fundingRequired,
+            fundingReceived: proposal.fundingReceived,
+            startTime: proposal.startTime,
+            endTime: proposal.endTime,
+            votingExpired: proposal.votingExpired,
+            approved: proposal.approved,
+            yesVotes: proposal.yesVotes,
+            noVotes: proposal.noVotes
+        });
+
+        return response;
     }
 
     // Function to check if a proposal has votingExpired
