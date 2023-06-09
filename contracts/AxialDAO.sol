@@ -46,7 +46,8 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface {
     function createProposal(
          string memory _goal,
         uint256 _fundingRequired,
-        uint256 _duration
+        uint256 _duration,
+        string memory projectId
     ) public {
         require(_duration > 0, "Duration must be greater than zero");
         require(
@@ -59,6 +60,7 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface {
         Proposal storage newProposal = proposals[proposalCounter];
 
             newProposal.id= proposalCounter;
+            newProposal.projectId = projectId;
             newProposal.creator= msg.sender;
             newProposal.goal= _goal;
             newProposal.fundingRequired= _fundingRequired;

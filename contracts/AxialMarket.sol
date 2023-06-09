@@ -59,12 +59,14 @@ contract AxialMarket is AutomationCompatibleInterface {
         CreditType creditType,
         uint256 amount
     ) public payable {
+        require(msg.value == amount, "Transaction Amount should match the value of token");
+
         if (creditType == CreditType.Ocean) {
-            oceanToken.transferFrom(msg.sender, address(this), amount);
+            oceanToken.transferFrom(address(this), msg.sender,  amount);
         } else if (creditType == CreditType.Clean) {
-            cleanToken.transferFrom(msg.sender, address(this), amount);
+            cleanToken.transferFrom(address(this), msg.sender,  amount);
         } else if (creditType == CreditType.Plastic) {
-            plasticToken.transferFrom(msg.sender, address(this), amount);
+            plasticToken.transferFrom(address(this), msg.sender,  amount);
         }
 
         userOffsets[msg.sender] += amount;
