@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT 
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 contract ProjectTracker {
@@ -71,7 +71,10 @@ contract ProjectTracker {
     }
 
     // Function to transfer MATIC to a project's balance
-    function fundProject(string memory projectId, uint256 amount) public payable {
+    function fundProject(
+        string memory projectId,
+        uint256 amount
+    ) public payable {
         // Get the project data
         Project memory project = projects[projectId];
 
@@ -88,10 +91,14 @@ contract ProjectTracker {
         emit FundProject(projectId, amount);
     }
 
-    function getProjectById(string memory projectId) public view returns (Project memory){
+    function getProjectById(
+        string memory projectId
+    ) public view returns (Project memory) {
         // return the project data
         return projects[projectId];
     }
+
+
 
     // Function to update the rating of a project by ID
     function updateRating(string memory projectId, uint256 newRating) public {
@@ -124,7 +131,10 @@ contract ProjectTracker {
     }
 
     // Function to update the commission status of a project
-    function updateCommissionStatus(string memory projectId, bool isCommissioned) public onlyAdmin {
+    function updateCommissionStatus(
+        string memory projectId,
+        bool isCommissioned
+    ) public onlyAdmin {
         // Get the project data
         Project storage project = projects[projectId];
 
@@ -133,7 +143,10 @@ contract ProjectTracker {
     }
 
     // Function to check if an address is a team member of a project
-    function isTeamMember(string memory projectId, address teamMember) internal view returns (bool) {
+    function isTeamMember(
+        string memory projectId,
+        address teamMember
+    ) internal view returns (bool) {
         // Get the project data
         Project storage project = projects[projectId];
 
@@ -147,10 +160,13 @@ contract ProjectTracker {
         return false;
     }
 
-     // Function to add address is a team member of a project
-    function addTeamMember(string memory projectId, address teamMember) public returns (bool) {
+    // Function to add address is a team member of a project
+    function addTeamMember(
+        string memory projectId,
+        address teamMember
+    ) public returns (bool) {
         // Get the project data
-        if(isTeamMember(projectId , msg.sender)){
+        if (isTeamMember(projectId, msg.sender)) {
             Project storage project = projects[projectId];
             project.teamMembers.push(teamMember);
             return true;

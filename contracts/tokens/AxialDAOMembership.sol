@@ -20,7 +20,7 @@ contract AxialDAOMembership is ERC721URIStorage {
 
     constructor(
         address _axialMarketContract
-    ) ERC721("AxialDAOMembership", "ADAO") {
+    ) ERC721("AxialDAOMembership", "AXLD") {
         axialMarketContract = _axialMarketContract;
     }
 

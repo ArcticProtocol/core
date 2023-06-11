@@ -54,6 +54,8 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
         proposalCounter = 0;
     }
 
+    event ProposalCreated(uint256 proposalId);
+
     // Function to create a new proposal
     function createProposal(
         string memory _goal,
@@ -85,7 +87,7 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
 
         proposalCounter++;
 
-        // Add to Project Porposal mapping
+        emit ProposalCreated(proposalCounter);
     }
 
     // Function to vote on a proposal
@@ -212,7 +214,7 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
 
             if (daoTreasury >= pendingAmount) {
                 bytes memory payload = abi.encodeWithSignature(
-                    "fundProject(uint256,string)",
+                    "fundProject(uint256, uint256)",
                     proposal.projectId,
                     pendingAmount
                 );
