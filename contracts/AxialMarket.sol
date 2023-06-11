@@ -14,7 +14,7 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
 
     mapping(address => uint256) private userOffsets;
     uint256 private totalOffsets;
-    uint256 marketReserveFund = 0;
+    uint256 public marketReserveFund = 0;
 
     // Array to track admin addresses
     address[] public admins;
@@ -103,8 +103,8 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
             plasticToken.burnFrom(msg.sender, amount);
         }
 
-        userOffsets[msg.sender] -= amount;
-        totalOffsets -= amount;
+        userOffsets[msg.sender] += amount;
+        totalOffsets += amount;
     }
 
     function getUserOffsets(address user) public view returns (uint256) {
@@ -134,7 +134,6 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
     function performUpkeep(bytes calldata performData) external override {
         uint256 marketFund = abi.decode(performData, (uint256));
         require(marketFund > 0, "Funds needs to be greater than 0 to trasnfer");
-
         axialDAO.transfer(marketFund);
     }
 }

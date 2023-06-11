@@ -43,19 +43,15 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
     }
 
     // Other contract references
-    ProjectTracker private projectTrackerContract;
+    address private projectTrackerContractAddress;
 
     // Proposal variables
     uint256 public proposalCounter;
     mapping(uint256 => Proposal) public proposals;
 
-    // DAO treasury
-    uint256 public daoTreasury;
-
     constructor(address _projectTrackerAddress) {
-        projectTrackerContract = ProjectTracker(_projectTrackerAddress);
+        projectTrackerContractAddress = _projectTrackerAddress;
         proposalCounter = 0;
-        daoTreasury = 0;
     }
 
     // Function to create a new proposal
@@ -72,7 +68,6 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
         );
 
         uint256 endTime = block.timestamp + _duration;
-
         Proposal storage newProposal = proposals[proposalCounter];
 
         newProposal.id = proposalCounter;
@@ -89,6 +84,8 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
         newProposal.noVotes = 0;
 
         proposalCounter++;
+
+        // Add to Project Porposal mapping
     }
 
     // Function to vote on a proposal
@@ -193,24 +190,31 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
             "Proposal has not yet votingExpired"
         );
 
+        if (!proposal.votingExpired) {
+            expireProposalVoting(proposalId);
+        }
+
         proposal.approved = proposal.yesVotes > proposal.noVotes;
+        uint256 pendingAmount = proposal.fundingRequired -
+            proposal.fundingReceived;
+        uint256 daoTreasury = address(this).balance;
 
-        if (
-            proposal.approved &&
-            ((proposal.fundingRequired - proposal.fundingReceived > 0))
-        ) {
+        if (proposal.approved && ((pendingAmount > 0))) {
             // Expire the voting proposal as a first step
-            if (!proposal.votingExpired) {
-                expireProposalVoting(proposalId);
-            }
 
-            if (daoTreasury >= proposal.fundingRequired) {
-                projectTrackerContract.fundProject(
+            if (daoTreasury >= pendingAmount) {
+                bytes memory payload = abi.encodeWithSignature(
+                    "fundProject(uint256,string)",
                     proposal.projectId,
-                    proposal.fundingRequired
+                    pendingAmount
                 );
-                daoTreasury -= proposal.fundingRequired;
-                proposal.fundingReceived += proposal.fundingRequired;
+
+                (bool success, ) = projectTrackerContractAddress.call{
+                    value: pendingAmount
+                }(payload);
+                require(success, "Failed to call fundProject");
+
+                proposal.fundingReceived += pendingAmount;
             } else {
                 // Funding goal not met, wait until sufficient funds are available
             }

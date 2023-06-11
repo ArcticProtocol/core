@@ -31,6 +31,7 @@ contract ProjectTracker {
         uint256 rating;
         bool isCommissioned;
         address[] teamMembers;
+        bool insured;
     }
 
     // Constructor to set the deployer as the first admin
@@ -61,7 +62,8 @@ contract ProjectTracker {
             impactGoal,
             rating,
             false,
-            teamMembers
+            teamMembers,
+            false
         );
 
         // Add the new project to the mapping
