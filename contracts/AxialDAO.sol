@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
-import "./ProjectTracker.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
     using Address for address;
@@ -89,7 +89,15 @@ contract AxialDAO is Ownable, AutomationCompatibleInterface, KeeperCompatible {
     }
 
     // Function to vote on a proposal
-    function vote(uint256 _proposalId, bool _approve) public {
+    function vote(
+        uint256 _proposalId,
+        bool _approve,
+        address nftAddress
+    ) public {
+        require(
+            IERC721(nftAddress).balanceOf(msg.sender) > 0,
+            "You need to be a memeber of the DAO to vote"
+        );
         require(_proposalId < proposalCounter, "Invalid proposal ID");
         Proposal storage proposal = proposals[_proposalId];
         require(proposal.votingExpired == false, "Proposal Voting has Expired");

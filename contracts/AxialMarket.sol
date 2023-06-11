@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
+import "./tokens/AxialDAOMembership.sol";
 
 contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
     enum CreditType {
@@ -19,7 +20,7 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
     // Array to track admin addresses
     address[] public admins;
 
-      // Modifier to check if the caller is an admin
+    // Modifier to check if the caller is an admin
     modifier onlyAdmin() {
         bool isAdmin = false;
         for (uint256 i = 0; i < admins.length; i++) {
@@ -31,7 +32,6 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
         require(isAdmin, "Only admins can call this function");
         _;
     }
-
 
     ERC20Burnable private oceanToken;
     ERC20Burnable private cleanToken;
@@ -57,7 +57,7 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
 
     function updateAxialDAOAddress(
         address payable daoAddress
-    ) public  onlyAdmin returns (bool) {
+    ) public onlyAdmin returns (bool) {
         axialDAO = daoAddress;
         return true;
     }
@@ -67,11 +67,11 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
         uint256 amount
     ) public payable {
         if (creditType == CreditType.Ocean) {
-            oceanToken.transferFrom(address(this), msg.sender,  amount);
+            oceanToken.transferFrom(address(this), msg.sender, amount);
         } else if (creditType == CreditType.Clean) {
-            cleanToken.transferFrom(address(this), msg.sender,  amount);
+            cleanToken.transferFrom(address(this), msg.sender, amount);
         } else if (creditType == CreditType.Plastic) {
-            plasticToken.transferFrom(address(this), msg.sender,  amount);
+            plasticToken.transferFrom(address(this), msg.sender, amount);
         }
 
         userOffsets[msg.sender] += amount;
@@ -81,7 +81,9 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
 
     function offsetTokens(
         uint256 amount,
-        CreditType creditType
+        CreditType creditType,
+        address nftAddress,
+        string memory tokenURI
     ) public payable {
         if (creditType == CreditType.Ocean) {
             require(
@@ -101,6 +103,10 @@ contract AxialMarket is AutomationCompatibleInterface, KeeperCompatible {
                 "Insufficient token balance"
             );
             plasticToken.burnFrom(msg.sender, amount);
+        }
+
+        if (AxialDAOMembership(nftAddress).balanceOf(msg.sender) < 1) {
+            AxialDAOMembership(nftAddress).mintMembership(msg.sender, tokenURI);
         }
 
         userOffsets[msg.sender] += amount;
